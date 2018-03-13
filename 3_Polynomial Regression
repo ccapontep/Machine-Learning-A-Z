@@ -1,0 +1,53 @@
+@author: Cecilia Aponte
+Udemy - Machine Learning A-Z
+Polynomial Regression
+"""
+
+###Importing the libraries
+import numpy as np 
+import matplotlib.pyplot as plt 
+import pandas as pd 
+
+###Importing the dataset
+dataset = pd.read_csv('Position_Salaries.csv')
+X = dataset.iloc[:, 1:2]. values  # create 1:2 matrix for independent variable
+y = dataset.iloc[:, 2]. values  #create dependent variable
+
+### Fitting Linear Regression to the dataset
+# Using this as a reference, so to compare the results from Linear Regression to Polynomial Regression
+from sklearn.linear_model import LinearRegression
+lin_reg = LinearRegression()
+lin_reg.fit(X, y)
+
+### Fitting Polynomial Regression to the dataset
+from sklearn.preprocessing import PolynomialFeatures
+poly_reg = PolynomialFeatures(degree = 4) # at degree 4, the model is better to data
+X_poly = poly_reg.fit_transform(X) 
+lin_reg_2 = LinearRegression() 
+lin_reg_2.fit(X_poly, y) #fit this new object to X_poly and y
+
+### Visualising the Linear Regression results
+# Visualisation to compare the base model (linear regression) to polynomial model
+plt.scatter(X, y, color = 'red')
+plt.plot(X, lin_reg.predict(X), color = 'blue')
+plt.title('Truth or Bluff (Linear Regression)')
+plt.xlabel('Position Level')
+plt.ylabel('Salary')
+plt.show()
+
+###Visualising the Polynomial Regression results with smoother curve
+X_grid = np.arange(min(X), max(X), 0.1) # in a vector form
+X_grid = X_grid.reshape(len(X_grid), 1) # reshape into a matrix
+plt.scatter(X, y, color = 'red')
+plt.plot(X_grid, lin_reg_2.predict(poly_reg.fit_transform(X_grid)), color = 'blue')
+plt.title('Truth or Bluff (Polynomial Regression)')
+plt.xlabel('Position Level')
+plt.ylabel('Salary')
+plt.show()
+
+### Predicting a new resilt with Linear Regression
+lin_reg.predict(6.5) # predict previous salary of new employee with level 6.5 with LR
+
+### Predicting new result with Polynomial Regression
+lin_reg_2.predict(poly_reg.fit_transform(6.5)) #predict previous salary of new employee with level 6.5
+
