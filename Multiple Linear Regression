@@ -1,0 +1,72 @@
+@author: Cecilia Aponte
+Udemy - Machine Learning A-Z
+Multiple Linear Regression
+"""
+### Importing the libraries
+import numpy as np 
+import matplotlib.pyplot as plt 
+import pandas as pd 
+
+### Importing the dataset
+dataset = pd.read_csv('50_Startups.csv')
+X = dataset.iloc[:, :-1]. values  
+y = dataset.iloc[:, 4]. values  
+
+### Encoding Categorical data
+# Encoding the independent variables
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder # library used to encode categorical data
+labelencoder_X = LabelEncoder() 
+X[:, 3] = labelencoder_X.fit_transform(X[:, 3]) # fit labelencoder to fourth column State
+onehotencoder = OneHotEncoder(categorical_features = [3]) # call column index 3 State
+X = onehotencoder.fit_transform(X).toarray() 
+
+### Avoiding the Dummy Variable Trap 
+X = X[:, 1:] # start the matrix from column index 1 (exclude 0, because need one less Dummy Variable)
+
+### Splitting dataset into Training set and Test set
+from sklearn.cross_validation import train_test_split 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0) 
+
+### Fitting Multiple Linear Regression to the Training set
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression() 
+regressor.fit(X_train, y_train) 
+
+### Predicting the Test set results
+y_pred = regressor.predict(X_test)
+
+### Building the optimal model using Backward ELimination
+import statsmodels.formula.api as sm # import library to compute p-values
+X = np.append(arr = np.ones((50, 1)).astype(int), values = X, axis = 1) # create 1 column of 50 rows with value ones, convert to integer, to add column axis =1
+X_opt = X[:, [0, 1, 2, 3, 4, 5]] # X_opt are the variables that are statistically significant to the model and will be used
+#                                  to do the correct model later. Do so by specifying every index in X
+#SL = 0.05 # Step 1: choose the significance level
+
+regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit()
+# Step 2: fit the full model with all possible predictors. Do so by creating a regressor_OLS (Ordinary Least Square)
+
+regressor_OLS.summary()
+# Step 3: Look for predictor with highest p-value. The lower the p-value of the indp variable, the more significant it is going to be wrt dependent variable 
+# x2 variable has the highest value and much higher than significance level = 0.99
+
+X_opt = X[:, [0, 1, 3, 4, 5]] # Step 4: Remove the variable with highest p-value which is index x2
+regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit() # Step 5: Fit model without this variable
+regressor_OLS.summary()
+# highest p-value is now x1 with p-value = 0.94
+
+X_opt = X[:, [0, 3, 4, 5]] # Step 4: Remove the variable with highest p-value which is index x1 from original X
+regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit() # Step 5: Fit model without this variable
+regressor_OLS.summary()
+# highest p-value is now x2 with p-value = 0.602
+
+X_opt = X[:, [0, 3, 5]] # Step 4: Remove the variable with highest p-value which is  x2 which is index 4
+regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit() # Step 5: Fit model without this variable
+regressor_OLS.summary()
+# highest p-value is now x2 with p-value = 0.06.
+
+X_opt = X[:, [0, 3]] # Step 4: Remove the variable with highest p-value which is  x2 which is index 5
+regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit() # Step 5: Fit model without this variable
+regressor_OLS.summary()
+# All variables now are lower than SL. This will be the final model. 
+
+
